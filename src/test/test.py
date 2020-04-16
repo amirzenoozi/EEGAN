@@ -14,10 +14,10 @@ from TESTGAN import Model
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
 
-is_training = tf.placeholder(tf.bool, [])
+is_training = tf.compat.v1.placeholder(tf.bool, [])
 # coord = tf.train.Coordinator()
 # threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 # try:
@@ -49,12 +49,12 @@ for f in file:
     if num==1:
         W_1 = W
         H_1 = H
-        x = tf.placeholder(tf.float32, [None, W, H, 3])
+        x = tf.compat.v1.placeholder(tf.float32, [None, W, H, 3])
         model = Model(x, is_training, 1)#16
-        init = tf.global_variables_initializer()
-        sess = tf.Session()
+        init = tf.compat.v1.global_variables_initializer()
+        sess = tf.compat.v1.Session()
         sess.run(init)
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.restore(sess, '../EEGANx4/epoch45')#93
         fake, mos, frame = sess.run(
             [model.imitation_sr, model.base_sr, model.frame_sr],
@@ -68,12 +68,12 @@ for f in file:
             #sess.close()
             W_1 = W
             H_1 = H
-            x = tf.placeholder(tf.float32, [None, W, H, 3])
+            x = tf.compat.v1.placeholder(tf.float32, [None, W, H, 3])
             model = Model(x, is_training, 1)#16
-            init = tf.global_variables_initializer()
-            sess = tf.Session()
+            init = tf.compat.v1.global_variables_initializer()
+            sess = tf.compat.v1.Session()
             sess.run(init)
-            saver = tf.train.Saver()
+            saver = tf.compat.v1.train.Saver()
             saver.restore(sess, '../EEGANx4/epoch45')#93
             fake, mos, frame = sess.run(
                 [model.imitation_sr, model.base_sr, model.frame_sr],

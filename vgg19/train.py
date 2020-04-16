@@ -12,22 +12,22 @@ learning_rate = 1e-3
 batch_size = 128
 
 def train():
-    x = tf.placeholder(tf.float32, [None, 96, 96, 3])
-    t = tf.placeholder(tf.int32, [None])
-    is_training = tf.placeholder(tf.bool, [])
+    x = tf.compat.v1.placeholder(tf.float32, [None, 96, 96, 3])
+    t = tf.compat.v1.placeholder(tf.int32, [None])
+    is_training = tf.compat.v1.placeholder(tf.bool, [])
 
     model = VGG19(x, t, is_training)
-    sess = tf.Session()
-    with tf.variable_scope('vgg19'):
+    sess = tf.compat.v1.Session()
+    with tf.compat.v1.variable_scope('vgg19'):
         global_step = tf.Variable(0, name='global_step', trainable=False)
-    opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    opt = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
     train_op = opt.minimize(model.loss, global_step=global_step)
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
 
     # Restore the latest model
     if tf.train.get_checkpoint_state('backup/'):
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.restore(sess, 'backup/latest')
 
     # Load the dataset
@@ -50,7 +50,7 @@ def train():
             sum_loss_value += loss_value
         print('loss:', sum_loss_value)
 
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.save(sess, 'backup/latest', write_meta_graph=False)
 
         prediction = np.array([])

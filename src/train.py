@@ -12,28 +12,29 @@ batch_size = 16
 vgg_model = '../vgg19/backup/latest'
 
 def train():
-    x = tf.placeholder(tf.float32, [None, 96, 96, 3])#128,96
-    is_training = tf.placeholder(tf.bool, [])
+    tf.compat.v1.disable_eager_execution()
+    x = tf.compat.v1.placeholder(tf.float32, [None, 96, 96, 3])#128,96
+    is_training = tf.compat.v1.placeholder(tf.bool, [])
 
     model = SRGAN(x, is_training, batch_size)
-    sess = tf.Session()
-    with tf.variable_scope('srgan'):
+    sess = tf.compat.v1.Session()
+    with tf.compat.v1.variable_scope('srgan'):
         global_step = tf.Variable(0, name='global_step', trainable=False)
-    opt = tf.train.AdamOptimizer(learning_rate=tf.train.exponential_decay(start_learning_rate,global_step, 2600, decay_rate=0.90,staircase=False)+1e-5)
+    opt = tf.compat.v1.train.AdamOptimizer(learning_rate=tf.compat.v1.train.exponential_decay(start_learning_rate,global_step, 2600, decay_rate=0.90,staircase=False)+1e-5)
     g_train_op = opt.minimize(model.g_loss, global_step=global_step, var_list=model.g_variables)
     d_train_op = opt.minimize(model.d_loss, global_step=global_step, var_list=model.d_variables)
-    init = tf.global_variables_initializer() 
+    init = tf.compat.v1.global_variables_initializer() 
     sess.run(init)
 
     # Restore the VGG-19 network
-    var = tf.global_variables()
+    var = tf.compat.v1.global_variables()
     vgg_var = [var_ for var_ in var if "vgg19" in var_.name]
-    saver = tf.train.Saver(vgg_var)
+    saver = tf.compat.v1.train.Saver(vgg_var)
     saver.restore(sess, vgg_model)
 
     # Restore the SRGAN network
     if tf.train.get_checkpoint_state('EEGANx4/'):
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.restore(sess, 'EEGANx4/epoch50')
 
     # Load the data
@@ -60,7 +61,7 @@ def train():
         save_img([mos, frame, base, fake, raw], ['Input', 'Frame', 'base', 'SR', 'Ground Truth'], epoch)
 
         # Save the model
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         save_path = 'EEGANx8'
         if epoch>0:
             saver.save(sess, os.path.join(save_path, 'epoch{}'.format(epoch)), write_meta_graph=False)

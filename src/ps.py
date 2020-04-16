@@ -4,7 +4,7 @@ def _PS(X, r, n_out_channel):
         if n_out_channel >= 1:
             assert int(X.get_shape()[-1]) == (r ** 2) * n_out_channel, _err_log
             bsize, a, b, c = X.get_shape().as_list()
-            bsize = tf.shape(X)[0] # Handling Dimension(None) type for undefined batch dim
+            bsize = tf.shape(input=X)[0] # Handling Dimension(None) type for undefined batch dim
             # X = tf.cast(X, tf.int32)
             Xs = tf.split(X, r, 3) #b*h*w*r*r dtype
             # Xs = tf.split(X, r, 3)

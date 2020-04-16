@@ -7,19 +7,14 @@ import numpy as np
     
 def edge(img):
 
-    #高斯模糊,降低噪声
     img = np.array(img)
     blurred = cv2.GaussianBlur(img,(3,3),0)
 
-    #灰度图像
     gray=cv2.cvtColor(blurred,cv2.COLOR_RGB2GRAY)
 
-    #图像梯度
     xgrad=cv2.Sobel(gray,cv2.CV_16SC1,1,0)
     ygrad=cv2.Sobel(gray,cv2.CV_16SC1,0,1)
 
-    #计算边缘
-    #50和150参数必须符合1：3或者1：2
     edge_output=cv2.Canny(xgrad,ygrad,50,150)
 
     dst = cv2.bitwise_and(img,img,mask=edge_output)
@@ -30,54 +25,54 @@ def lrelu(x, trainbable=None):
     return tf.maximum(alpha * x, x)
         
 def prelu(x, trainable=True):
-    alpha = tf.get_variable(
+    alpha = tf.compat.v1.get_variable(
         name='alpha', 
         shape=x.get_shape()[-1],
         dtype=tf.float32,
-        initializer=tf.constant_initializer(0.0),
+        initializer=tf.compat.v1.constant_initializer(0.0),
         trainable=trainable)
     return tf.maximum(0.0, x) + alpha * tf.minimum(0.0, x)
 
 
 def conv_layer(x, filter_shape, stride, trainable=True):
-    filter_ = tf.get_variable(
+    filter_ = tf.compat.v1.get_variable(
         name='weight', 
         shape=filter_shape,
         dtype=tf.float32, 
-        initializer=tf.contrib.layers.xavier_initializer(),
+        initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
         trainable=trainable)
     return tf.nn.conv2d(
         input=x,
-        filter=filter_,
+        filters=filter_,
         strides=[1, stride, stride, 1],
         padding='SAME')
 
 
 def deconv_layer(x, filter_shape, output_shape, stride, trainable=True):
-    filter_ = tf.get_variable(
+    filter_ = tf.compat.v1.get_variable(
         name='weight',
         shape=filter_shape,
         dtype=tf.float32,
-        initializer=tf.contrib.layers.xavier_initializer(),
+        initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
         trainable=trainable)
     return tf.nn.conv2d_transpose(
-        value=x,
-        filter=filter_,
+        input=x,
+        filters=filter_,
         output_shape=output_shape,
         strides=[1, stride, stride, 1])
 
 
 def max_pooling_layer(x, size, stride):
-    return tf.nn.max_pool(
-        value=x,
+    return tf.nn.max_pool2d(
+        input=x,
         ksize=[1, size, size, 1],
         strides=[1, stride, stride, 1],
         padding='SAME')
 
 
 def avg_pooling_layer(x, size, stride):
-    return tf.nn.avg_pool(
-        value=x,
+    return tf.nn.avg_pool2d(
+        input=x,
         ksize=[1, size, size, 1],
         strides=[1, stride, stride, 1],
         padding='SAME')
@@ -85,27 +80,27 @@ def avg_pooling_layer(x, size, stride):
 
 def full_connection_layer(x, out_dim, trainable=True):
     in_dim = x.get_shape().as_list()[-1]
-    W = tf.get_variable(
+    W = tf.compat.v1.get_variable(
         name='weight',
         shape=[in_dim, out_dim],
         dtype=tf.float32,
-        initializer=tf.truncated_normal_initializer(stddev=0.1),
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1),
         trainable=trainable)
-    b = tf.get_variable(
+    b = tf.compat.v1.get_variable(
         name='bias',
         shape=[out_dim],
         dtype=tf.float32,
-        initializer=tf.constant_initializer(0.0),
+        initializer=tf.compat.v1.constant_initializer(0.0),
         trainable=trainable)
     return tf.add(tf.matmul(x, W), b)
 
 
 def batch_normalize(x, is_training, decay=0.99, epsilon=0.001, trainable=True):
     def bn_train():
-        batch_mean, batch_var = tf.nn.moments(x, axes=[0, 1, 2])
-        train_mean = tf.assign(
+        batch_mean, batch_var = tf.nn.moments(x=x, axes=[0, 1, 2])
+        train_mean = tf.compat.v1.assign(
             pop_mean, pop_mean * decay + batch_mean * (1 - decay))
-        train_var = tf.assign(
+        train_var = tf.compat.v1.assign(
             pop_var, pop_var * decay + batch_var * (1 - decay))
         with tf.control_dependencies([train_mean, train_var]):
             return tf.nn.batch_normalization(
@@ -116,31 +111,31 @@ def batch_normalize(x, is_training, decay=0.99, epsilon=0.001, trainable=True):
             x, pop_mean, pop_var, beta, scale, epsilon)
 
     dim = x.get_shape().as_list()[-1]
-    beta = tf.get_variable(
+    beta = tf.compat.v1.get_variable(
         name='beta',
         shape=[dim],
         dtype=tf.float32,
-        initializer=tf.truncated_normal_initializer(stddev=0.0),
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.0),
         trainable=trainable)
-    scale = tf.get_variable(
+    scale = tf.compat.v1.get_variable(
         name='scale',
         shape=[dim],
         dtype=tf.float32,
-        initializer=tf.truncated_normal_initializer(stddev=0.1),
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1),
         trainable=trainable)
-    pop_mean = tf.get_variable(
+    pop_mean = tf.compat.v1.get_variable(
         name='pop_mean',
         shape=[dim],
         dtype=tf.float32,
-        initializer=tf.constant_initializer(0.0),
+        initializer=tf.compat.v1.constant_initializer(0.0),
         trainable=False)
-    pop_var = tf.get_variable(
+    pop_var = tf.compat.v1.get_variable(
         name='pop_var', 
         shape=[dim],
         dtype=tf.float32,
-        initializer=tf.constant_initializer(1.0),
+        initializer=tf.compat.v1.constant_initializer(1.0),
         trainable=False)
-    return tf.cond(is_training, bn_train, bn_inference)
+    return tf.cond(pred=is_training, true_fn=bn_train, false_fn=bn_inference)
     
 def gkern(kernlen=13, nsig=1.6):
     import scipy.ndimage.filters as fi
@@ -154,7 +149,7 @@ def gkern(kernlen=13, nsig=1.6):
 def flatten_layer(x):
     input_shape = x.get_shape().as_list()
     dim = input_shape[1] * input_shape[2] * input_shape[3]
-    transposed = tf.transpose(x, (0, 3, 1, 2))
+    transposed = tf.transpose(a=x, perm=(0, 3, 1, 2))
     return tf.reshape(transposed, [-1, dim])
 
 def pixel_shuffle_layerg(x, r, n_split):
@@ -162,7 +157,7 @@ def pixel_shuffle_layerg(x, r, n_split):
         bs, a, b, c = x.get_shape().as_list()
         if bs==1: 
             x = tf.reshape(x, (a, b, r, r))
-            x = tf.transpose(x, (0, 1, 3, 2))
+            x = tf.transpose(a=x, perm=(0, 1, 3, 2))
             #print(x.shape)
             x = tf.split(x, a, 0)
             x = tf.concat([tf.squeeze(x_) for x_ in x], 1)
@@ -173,7 +168,7 @@ def pixel_shuffle_layerg(x, r, n_split):
             #x = tf.concat([tf.squeeze(x_) for x_ in x], 2)
         else:
             x = tf.reshape(x, (bs, a, b, r, r))
-            x = tf.transpose(x, (0, 1, 2, 4, 3))
+            x = tf.transpose(a=x, perm=(0, 1, 2, 4, 3))
             #print(x.shape)
             x = tf.split(x, a, 1)
             x = tf.concat([tf.squeeze(x_) for x_ in x], 2)
@@ -191,7 +186,7 @@ def pixel_shuffle_layer(x, r, n_split):
     def PS(x, r):
         bs, a, b, c = x.get_shape().as_list()
         x = tf.reshape(x, (bs, a, b, r, r))
-        x = tf.transpose(x, (0, 1, 2, 4, 3))
+        x = tf.transpose(a=x, perm=(0, 1, 2, 4, 3))
         x = tf.split(x, a, 1)
         x = tf.concat([tf.squeeze(x_) for x_ in x], 2)
         x = tf.split(x, b, 1)
@@ -205,7 +200,7 @@ def _PS(X, r, n_out_channel):
     if n_out_channel >= 1:
         assert int(X.get_shape()[-1]) == (r ** 2) * n_out_channel, _err_log
         bsize, a, b, c = X.get_shape().as_list()
-        bsize = tf.shape(X)[0] # Handling Dimension(None) type for undefined batch dim
+        bsize = tf.shape(input=X)[0] # Handling Dimension(None) type for undefined batch dim
         # X = tf.cast(X, tf.int32)
         Xs = tf.split(X, r, 3) #b*h*w*r*r dtype
         # Xs = tf.split(X, r, 3)
@@ -222,7 +217,7 @@ def PS_layer(X, r, n_split):
         def PS(x, r):
             bsize, a, b, c = x.get_shape().as_list()
             #bs, a, b, c = x.get_shape().as_list()
-            bsize = tf.shape(x)[0]
+            bsize = tf.shape(input=x)[0]
             x = tf.reshape(x, (bsize, a, b, r, r))
             #x = tf.transpose(x, (0, 1, 2, 4, 3))
             #print(x.shape)
@@ -295,17 +290,17 @@ def down_sample(X):
 
     #img1 = offset(X, (OFF), (0))
     #image1 = image1.resize((bs, a//scale, b//scale, c), interpolation=cv2.INTER_CUBIC)
-    image1 = tf.image.resize_images(image1, [a//scale, b//scale], method=1)
+    image1 = tf.image.resize(image1, [a//scale, b//scale], method=1)
     #img2 = offset(X, (-OFF), (0))
-    image2 = tf.image.resize_images(image2, [a//scale, b//scale], method=1)
+    image2 = tf.image.resize(image2, [a//scale, b//scale], method=1)
     #image2 = cv2.resize(image2, (bs, a//scale, b//scale, c), interpolation=cv2.INTER_CUBIC)
     #img3 = offset(X, (0), (OFF))
-    image3 = tf.image.resize_images(image3, [a//scale, b//scale], method=1)
+    image3 = tf.image.resize(image3, [a//scale, b//scale], method=1)
     #image3 = cv2.resize(image3, (bs, a//scale, b//scale, c), interpolation=cv2.INTER_CUBIC)
     #img4 = offset(X, (0), (-OFF))
-    image4 = tf.image.resize_images(image4, [a//scale, b//scale], method=1)
+    image4 = tf.image.resize(image4, [a//scale, b//scale], method=1)
     #image4 = cv2.resize(image4, (bs, a//scale, b//scale, c), interpolation=cv2.INTER_CUBIC)
-    image5 = tf.image.resize_images(X, [a//scale, b//scale], method=1)
+    image5 = tf.image.resize(X, [a//scale, b//scale], method=1)
     #image5 = cv2.resize(X, (bs, a//scale, b//scale, c), interpolation=cv2.INTER_CUBIC)
     image = tf.concat([image1,image2,image3,image4,image5],3)
     return image
