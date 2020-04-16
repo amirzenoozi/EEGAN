@@ -6,3 +6,4 @@ src/backup/*
 src/result/*
 __pycache__
 !.gitkeep
+.idea
