@@ -4,6 +4,7 @@ vgg19/backup/*
 src/lfw/data/*
 src/backup/*
 src/result/*
+src/EEGANx8
 __pycache__
 !.gitkeep
 .idea
