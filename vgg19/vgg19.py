@@ -1,8 +1,10 @@
 import tensorflow as tf
 
 import sys
+
 sys.path.append('../utils')
 from layer import *
+
 
 class VGG19:
     def __init__(self, x, t, is_training):
@@ -104,10 +106,8 @@ class VGG19:
 
             return x, phi
 
-
     def inference_loss(self, out, t):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
             labels=tf.stop_gradient(tf.one_hot(t, 100)),
             logits=out)
         return tf.reduce_mean(input_tensor=cross_entropy)
-

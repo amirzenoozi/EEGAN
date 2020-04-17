@@ -9,7 +9,6 @@ import tarfile
 
 
 def preprocess():
-
     print('... loading data')
     os.mkdir('data/raw')
     os.mkdir('data/raw/train')
@@ -18,16 +17,13 @@ def preprocess():
 
     persons = glob.glob('data/lfw/*')
     paths = np.array(
-        [e for x in [glob.glob(person) 
-        for person in persons] for e in x])
+        [e for x in [glob.glob(person)
+                     for person in persons] for e in x])
     np.random.shuffle(paths)
-
 
     r = int(len(paths) * 0.99)
     train_paths = paths[:r]
     test_paths = paths[r:]
-
-
 
     x_train = []
     pbar = tqdm(total=(len(train_paths)))
@@ -47,8 +43,6 @@ def preprocess():
 
     pbar.close()
 
-
-
     x_test = []
     pbar = tqdm(total=(len(test_paths)))
     for i, d in enumerate(test_paths):
@@ -66,8 +60,6 @@ def preprocess():
         cv2.imwrite(imgpath, face)
 
     pbar.close()
-
-
 
     x_train = np.array(x_train, dtype=np.uint8)
     x_test = np.array(x_test, dtype=np.uint8)

@@ -7,6 +7,7 @@ import scipy.sparse as sps
 import numpy as np
 import tensorflow as tf
 
+
 def getlaplacian1(i_arr, consts, epsilon=1e-5, win_rad=1):
     neb_size = (win_rad * 2 + 1) ** 2
     h, w, c = i_arr.shape
@@ -50,6 +51,7 @@ def getlaplacian1(i_arr, consts, epsilon=1e-5, win_rad=1):
     a_sparse = sps.diags([sum_a], [0], shape=(img_size, img_size)) - a_sparse
 
     return a_sparse
+
 
 def getLaplacian(img):
     h, w, _ = img.shape

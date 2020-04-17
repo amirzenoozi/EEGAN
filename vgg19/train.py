@@ -3,6 +3,7 @@ import tensorflow as tf
 from tqdm import tqdm
 import argparse
 import sys
+
 sys.path.append('../utils')
 from vgg19 import VGG19
 import load
@@ -10,6 +11,7 @@ import augment
 
 learning_rate = 1e-3
 batch_size = 128
+
 
 def train():
     x = tf.compat.v1.placeholder(tf.float32, [None, 96, 96, 3])
@@ -35,15 +37,15 @@ def train():
 
     # Train
     while True:
-        epoch = int(sess.run(global_step) / np.ceil(len(x_train)/batch_size)) + 1
+        epoch = int(sess.run(global_step) / np.ceil(len(x_train) / batch_size)) + 1
         print('epoch:', epoch)
         perm = np.random.permutation(len(x_train))
         x_train = x_train[perm]
         t_train = t_train[perm]
         sum_loss_value = 0
         for i in tqdm(range(0, len(x_train), batch_size)):
-            x_batch = augment.augment(x_train[i:i+batch_size])
-            t_batch = t_train[i:i+batch_size]
+            x_batch = augment.augment(x_train[i:i + batch_size])
+            t_batch = t_train[i:i + batch_size]
             _, loss_value = sess.run(
                 [train_op, model.loss],
                 feed_dict={x: x_batch, t: t_batch, is_training: True})
@@ -56,8 +58,8 @@ def train():
         prediction = np.array([])
         answer = np.array([])
         for i in range(0, len(x_test), batch_size):
-            x_batch = augment.augment(x_test[i:i+batch_size])
-            t_batch = t_test[i:i+batch_size]
+            x_batch = augment.augment(x_test[i:i + batch_size])
+            t_batch = t_test[i:i + batch_size]
             output = model.out.eval(
                 feed_dict={x: x_batch, is_training: False}, session=sess)
             prediction = np.concatenate([prediction, np.argmax(output, 1)])
@@ -69,4 +71,3 @@ def train():
 
 if __name__ == '__main__':
     train()
-
